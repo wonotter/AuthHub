@@ -1,0 +1,5 @@
+rootProject.name = 'authhub'
+
+include('domain')
+include('interface')
+include('implementation')
