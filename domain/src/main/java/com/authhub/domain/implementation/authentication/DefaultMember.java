@@ -139,6 +139,10 @@ public class DefaultMember extends BaseTimeEntity implements Member {
         return new MemberBuilder();
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     /**
      * Member 객체 생성을 위한 빌더 클래스
      * 복잡한 Member 객체의 생성 프로세스를 단순화하고 가독성을 향상

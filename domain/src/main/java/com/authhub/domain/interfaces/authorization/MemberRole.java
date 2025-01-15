@@ -1,10 +1,9 @@
 package com.authhub.domain.interfaces.authorization;
 
-import com.authhub.domain.implementation.authentication.DefaultMember;
-import com.authhub.domain.implementation.authorization.DefaultRole;
+import com.authhub.domain.interfaces.authentication.Member;
 
 public interface MemberRole {
     Long getId();
-    DefaultMember getMember();
-    DefaultRole getRole();
+    Member getMember();
+    Role getRole();
 }
