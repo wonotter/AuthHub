@@ -1,19 +1,21 @@
 package com.authhub.domain.interfaces.authorization;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
 
-public interface Role extends GrantedAuthority {
-    /**
-     * 역할의 이름을 반환
-     * @return 역할 이름 문자열
-     */
-    String getName();
+import com.authhub.domain.implementation.authorization.DefaultGroupRole;
+import com.authhub.domain.implementation.authorization.DefaultMemberRole;
+import com.authhub.domain.implementation.authorization.DefaultRolePermission;
 
-    /**
-     * 역할에 할당된 권한 목록을 반환
-     * @return 권한(Permission) 객체의 리스트
-     */
-    List<Permission> getPermissions();
+/**
+ * 역할(Role) 인터페이스
+ * - "ROLE_ADMIN", "ROLE_USER" 등 식별자를 반환
+ */
+public interface Role extends GrantedAuthority {
+    Long getId();
+    String getRoleName();
+    Set<DefaultMemberRole> getUserRoles();
+    Set<DefaultRolePermission> getRolePermissions();
+    Set<DefaultGroupRole> getGroupRoles();
 }

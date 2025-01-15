@@ -1,25 +1,17 @@
 package com.authhub.domain.interfaces.authorization;
 
-import java.util.List;
+import java.util.Set;
 
-import com.authhub.domain.interfaces.authentication.User;
+import com.authhub.domain.implementation.authorization.DefaultGroupRole;
+import com.authhub.domain.implementation.authorization.DefaultMemberGroup;
 
+/**
+ * 그룹(Group) 인터페이스
+ * - 여러 사용자, 여러 역할을 묶을 수 있는 상위 개념
+ */
 public interface Group {
-    /**
-     * 그룹의 이름을 반환
-     * @return 그룹 이름 문자열
-     */
-    String getName();
-
-    /**
-     * 그룹에 속한 사용자 목록을 반환
-     * @return 사용자(User) 객체의 리스트
-     */
-    List<User> getUsers();
-
-    /**
-     * 그룹에 할당된 역할 목록을 반환
-     * @return 역할(Role) 객체의 리스트
-     */
-    List<Role> getRoles();
+    Long getId();
+    String getGroupName();
+    Set<DefaultMemberGroup> getMemberGroups();
+    Set<DefaultGroupRole> getGroupRoles();
 }
