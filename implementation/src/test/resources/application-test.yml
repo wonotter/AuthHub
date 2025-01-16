@@ -1,0 +1,26 @@
+spring:
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:test
+    username: auth
+    password: auth
+    driver-class-name: org.h2.Driver
+  
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        hbm2ddl.auto: create-drop
+        default_batch_fetch_size: 100
+    open-in-view: false
+    show-sql: true
+
+logging:
+  level:
+    org:
+      hibernate:
+        type: info
+        level: info
