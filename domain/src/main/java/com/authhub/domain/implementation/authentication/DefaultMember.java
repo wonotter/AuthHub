@@ -50,22 +50,73 @@ public class DefaultMember extends BaseTimeEntity implements Member {
         this.groups = new HashSet<>();
     }
 
-    public void addRole(DefaultMemberRole role) {
+    public void updateFrom(DefaultMember other) {
+        // 비밀번호 업데이트
+        if (other.getPassword() != null && !other.getPassword().isEmpty()) {
+            this.setPassword(other.getPassword());
+        }
+
+        // 역할 업데이트
+        if (other.getRoles() != null) {
+            this.roles.clear();
+            other.getRoles().forEach(role -> {
+                if (role instanceof DefaultMemberRole) {
+                    this.addMemberRole((DefaultMemberRole) role);
+                }
+            });
+        }
+
+        // 그룹 업데이트
+        if (other.getGroups() != null) {
+            this.groups.clear();
+            other.getGroups().forEach(group -> {
+                if (group instanceof DefaultMemberGroup) {
+                    this.addMemberGroup((DefaultMemberGroup) group);
+                }
+            });
+        }
+    }
+
+    public void addToRole(DefaultRole role) {
+        DefaultMemberRole memberRole = new DefaultMemberRole(this, role);
+        this.roles.add(memberRole);
+        role.addMemberRole(memberRole);
+    }
+
+    public boolean hasGroup(String groupName) {
+        return this.groups.stream()
+            .map(DefaultMemberGroup::getGroup)
+            .anyMatch(g -> g.getGroupName().equals(groupName));
+    }
+
+    public boolean hasRole(String roleName) {
+        return this.roles.stream()
+            .map(DefaultMemberRole::getRole)
+            .anyMatch(r -> r.getRoleName().equals(roleName));
+    }
+
+    public void addToGroup(DefaultGroup group) {
+        DefaultMemberGroup memberGroup = new DefaultMemberGroup(this, group);
+        this.groups.add(memberGroup);
+        group.addMemberGroup(memberGroup);
+    }
+
+    public void addMemberRole(DefaultMemberRole role) {
         this.roles.add(role);
         role.setMember(this);
       }
     
-      public void removeRole(DefaultMemberRole role) {
+      public void removeMemberRole(DefaultMemberRole role) {
         this.roles.remove(role);
         role.setMember(null);
       }
     
-      public void addGroup(DefaultMemberGroup group) {
+      public void addMemberGroup(DefaultMemberGroup group) {
         this.groups.add(group);
         group.setMember(this);
       }
     
-      public void removeGroup(DefaultMemberGroup group) {
+      public void removeMemberGroup(DefaultMemberGroup group) {
         this.groups.remove(group);
         group.setMember(null);
       }
@@ -247,8 +298,8 @@ public class DefaultMember extends BaseTimeEntity implements Member {
          */
         public DefaultMember build() {
             DefaultMember member = new DefaultMember(username, password);
-            roles.forEach(member::addRole);
-            groups.forEach(member::addGroup);
+            roles.forEach(member::addMemberRole);
+            groups.forEach(member::addMemberGroup);
             return member;
         }
     }

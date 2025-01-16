@@ -23,6 +23,8 @@ public class DefaultRolePermission extends BaseTimeEntity implements RolePermiss
     @JoinColumn(name = "permission_id")
     private DefaultPermission permission;
 
+    protected DefaultRolePermission() {}
+
     @Override
     public Long getId() {
         return this.id;

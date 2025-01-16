@@ -22,6 +22,8 @@ public class DefaultMemberRole extends BaseTimeEntity implements MemberRole {
     @JoinColumn(name = "role_id")
     private DefaultRole role;
 
+    protected DefaultMemberRole() {}
+
     public DefaultMemberRole(DefaultMember member, DefaultRole role) {
         this.member = member;
         this.role = role;

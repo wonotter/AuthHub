@@ -7,9 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.authhub.domain.implementation.authentication.DefaultMember;
 import com.authhub.domain.implementation.authorization.DefaultGroup;
-import com.authhub.domain.implementation.authorization.DefaultGroupRole;
-import com.authhub.domain.implementation.authorization.DefaultMemberGroup;
-import com.authhub.domain.implementation.authorization.DefaultMemberRole;
 import com.authhub.domain.implementation.authorization.DefaultRole;
 import com.authhub.domain.interfaces.authentication.Member;
 import com.authhub.domain.interfaces.authorization.Group;
@@ -68,28 +65,7 @@ public class DefaultMemberManagementService implements MemberManagementService {
         DefaultMember existingMember = memberRepository.findByUsername(defaultMember.getUsername())
                 .orElseThrow(() -> new MemberNotFoundException(ExceptionType.MEMBER_NOT_FOUND.getMessage()));
         
-        if (defaultMember.getPassword() != null && !defaultMember.getPassword().isEmpty()) {
-            existingMember.setPassword(defaultMember.getPassword());
-        }
-
-        if (defaultMember.getRoles() != null) {
-            existingMember.getRoles().clear();
-            defaultMember.getRoles().forEach(role -> {
-                if (role instanceof DefaultMemberRole) {
-                    existingMember.addRole((DefaultMemberRole) role);
-                }
-            });
-        }
-
-        if (defaultMember.getGroups() != null) {
-            existingMember.getGroups().clear();
-            defaultMember.getGroups().forEach(group -> {
-                if (group instanceof DefaultMemberGroup) {
-                    existingMember.addGroup((DefaultMemberGroup) group);
-                }
-            });
-        }
-
+        existingMember.updateFrom(defaultMember);
         DefaultMember updatedMember = memberRepository.save(existingMember);
         return updatedMember;
     }
@@ -128,19 +104,12 @@ public class DefaultMemberManagementService implements MemberManagementService {
         DefaultRole role = roleRepository.findByRoleName(roleName)
                 .orElseThrow(() -> new RoleNotFoundException(ExceptionType.ROLE_NOT_FOUND.getMessage()));
 
-        boolean hasRole = member.getRoles().stream()
-                .map(DefaultMemberRole::getRole)
-                .anyMatch(r -> r.getRoleName().equals(roleName));
-
         // 이미 할당된 상태인지 중복 체크 로직 작성
-        if (hasRole) {
+        if (member.hasRole(roleName)) {
             throw new RoleAlreadyAssignedException(ExceptionType.ROLE_ALREADY_ASSIGNED.getMessage());
         }
 
-        DefaultMemberRole memberRole = new DefaultMemberRole(member, role);
-        member.addRole(memberRole);
-        role.addMemberRole(memberRole);
-        
+        member.addToRole(role);
         memberRepository.save(member);
     }
 
@@ -165,21 +134,11 @@ public class DefaultMemberManagementService implements MemberManagementService {
                 .orElseThrow(() -> new GroupNotFoundException(ExceptionType.GROUP_NOT_FOUND.getMessage()));
 
         //이미 속해 있는지 중복 체크 로직
-        boolean hasGroup = member.getGroups().stream()
-                .map(DefaultMemberGroup::getGroup)
-                .anyMatch(g -> g.getGroupName().equals(groupName));
-
-        if (hasGroup) {
+        if (member.hasGroup(groupName)) {
             throw new GroupAlreadyAssignedException(ExceptionType.GROUP_ALREADY_ASSIGNED.getMessage());
         }
 
-        DefaultMemberGroup memberGroup = new DefaultMemberGroup();
-        memberGroup.setMember(member);
-        memberGroup.setGroup(group);
-
-        member.addGroup(memberGroup);
-        group.addMemberGroup(memberGroup);
-
+        member.addToGroup(group);
         memberRepository.save(member);
     }
 
@@ -191,13 +150,12 @@ public class DefaultMemberManagementService implements MemberManagementService {
         DefaultGroup group = groupRepository.findByGroupName(groupName)
                 .orElseThrow(() -> new GroupNotFoundException(ExceptionType.GROUP_NOT_FOUND.getMessage()));
 
-        DefaultGroupRole groupRole = new DefaultGroupRole();
-        groupRole.setGroup(group);
-        groupRole.setRole(role);
+        //이미 속해 있는지 중복 체크 로직
+        if (group.hasRole(roleName)) {
+            throw new RoleAlreadyAssignedException(ExceptionType.ROLE_ALREADY_ASSIGNED.getMessage());
+        }
 
-        group.addGroupRole(groupRole);
-        role.addGroupRole(groupRole);
-
+        group.addToRole(role);
         groupRepository.save(group);
     }
 }

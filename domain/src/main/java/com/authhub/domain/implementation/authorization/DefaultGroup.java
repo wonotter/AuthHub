@@ -27,10 +27,24 @@ public class DefaultGroup extends BaseTimeEntity implements Group {
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DefaultGroupRole> groupRoles;
 
+    protected DefaultGroup() {}
+
     private DefaultGroup(String groupName) {
         this.groupName = groupName;
         this.userGroups = new HashSet<>();
         this.groupRoles = new HashSet<>();
+    }
+
+    public boolean hasRole(String roleName) {
+        return this.groupRoles.stream()
+            .map(DefaultGroupRole::getRole)
+            .anyMatch(r -> r.getRoleName().equals(roleName));
+    }
+
+    public void addToRole(DefaultRole role) {
+        DefaultGroupRole groupRole = new DefaultGroupRole(this, role);
+        this.groupRoles.add(groupRole);
+        role.addGroupRole(groupRole);
     }
 
     public void addMemberGroup(DefaultMemberGroup memberGroup) {

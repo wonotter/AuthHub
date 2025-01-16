@@ -21,6 +21,13 @@ public class DefaultGroupRole extends BaseTimeEntity implements GroupRole {
     @JoinColumn(name = "role_id")
     private DefaultRole role;
 
+    protected DefaultGroupRole() {}
+
+    public DefaultGroupRole(DefaultGroup group, DefaultRole role) {
+        this.group = group;
+        this.role = role;
+    }
+
     @Override
     public Long getId() {
         return this.id;

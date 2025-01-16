@@ -22,6 +22,13 @@ public class DefaultMemberGroup extends BaseTimeEntity implements MemberGroup {
     @JoinColumn(name = "group_id")
     private DefaultGroup group;
 
+    protected DefaultMemberGroup() {}
+
+    public DefaultMemberGroup(DefaultMember member, DefaultGroup group) {
+        this.member = member;
+        this.group = group;
+    }
+
     @Override
     public Long getId() {
         return this.id;

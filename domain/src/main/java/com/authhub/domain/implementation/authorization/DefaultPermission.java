@@ -25,6 +25,8 @@ public class DefaultPermission extends BaseTimeEntity implements Permission {
     @OneToMany(mappedBy = "permission", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DefaultRolePermission> rolePermissions;
 
+    protected DefaultPermission() {}
+
     public DefaultPermission(String permissionName) {
         this.permissionName = permissionName;
         this.rolePermissions = new HashSet<>();
