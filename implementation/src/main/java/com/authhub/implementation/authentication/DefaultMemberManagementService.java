@@ -6,16 +6,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.authhub.domain.implementation.authentication.DefaultMember;
+import com.authhub.domain.implementation.authorization.DefaultGroup;
+import com.authhub.domain.implementation.authorization.DefaultGroupRole;
 import com.authhub.domain.implementation.authorization.DefaultMemberGroup;
 import com.authhub.domain.implementation.authorization.DefaultMemberRole;
+import com.authhub.domain.implementation.authorization.DefaultRole;
 import com.authhub.domain.interfaces.authentication.Member;
 import com.authhub.domain.interfaces.authorization.Group;
 import com.authhub.domain.interfaces.authorization.Role;
 import com.authhub.domain.repository.DefaultGroupRepository;
 import com.authhub.domain.repository.DefaultMemberRepository;
 import com.authhub.domain.repository.DefaultRoleRepository;
+import com.authhub.implementation.exception.commonexception.GroupAlreadyAssignedException;
+import com.authhub.implementation.exception.commonexception.GroupNotFoundException;
 import com.authhub.implementation.exception.commonexception.MemberNotFoundException;
+import com.authhub.implementation.exception.commonexception.RoleAlreadyAssignedException;
+import com.authhub.implementation.exception.commonexception.RoleNotFoundException;
+import com.authhub.implementation.exception.commonexception.UnsupportedGroupTypeException;
 import com.authhub.implementation.exception.commonexception.UnsupportedMemberTypeException;
+import com.authhub.implementation.exception.commonexception.UnsupportedRoleTypeException;
 import com.authhub.implementation.exception.domain.ExceptionType;
 import com.authhub.interfaces.authentication.MemberManagementService;
 
@@ -26,7 +35,11 @@ public class DefaultMemberManagementService implements MemberManagementService {
     private final DefaultRoleRepository roleRepository;
     private final DefaultGroupRepository groupRepository;
 
-    public DefaultMemberManagementService(DefaultMemberRepository memberRepository, DefaultRoleRepository roleRepository, DefaultGroupRepository groupRepository) {
+    public DefaultMemberManagementService(
+        DefaultMemberRepository memberRepository, 
+        DefaultRoleRepository roleRepository, 
+        DefaultGroupRepository groupRepository
+    ) {
         this.memberRepository = memberRepository;
         this.roleRepository = roleRepository;
         this.groupRepository = groupRepository;
@@ -82,44 +95,109 @@ public class DefaultMemberManagementService implements MemberManagementService {
     }
 
     @Override
+    @Transactional
     public void deleteMember(String username) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteMember'");
+        Optional<DefaultMember> memberOpt = memberRepository.findByUsername(username);
+        if (memberOpt.isEmpty()) {
+            throw new MemberNotFoundException(ExceptionType.MEMBER_NOT_FOUND.getMessage());
+        }
+        memberRepository.delete(memberOpt.get());
     }
 
     @Override
     public Optional<Member> findMemberByUsername(String username) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findMemberByUsername'");
+        return memberRepository.findByUsername(username).map(member -> (Member) member);
     }
 
     @Override
+    @Transactional
     public Role createRole(Role role) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createRole'");
+        if (!(role instanceof DefaultRole)) {
+            throw new UnsupportedRoleTypeException(ExceptionType.UNSUPPORTED_ROLE_TYPE.getMessage());
+        }
+        DefaultRole defaultRole = (DefaultRole) role;
+        DefaultRole savedRole = roleRepository.save(defaultRole);
+        return savedRole;
     }
 
     @Override
+    @Transactional
     public void assignRoleToMember(String username, String roleName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'assignRoleToMember'");
+        DefaultMember member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new MemberNotFoundException(ExceptionType.MEMBER_NOT_FOUND.getMessage()));
+        DefaultRole role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new RoleNotFoundException(ExceptionType.ROLE_NOT_FOUND.getMessage()));
+
+        boolean hasRole = member.getRoles().stream()
+                .map(DefaultMemberRole::getRole)
+                .anyMatch(r -> r.getRoleName().equals(roleName));
+
+        // 이미 할당된 상태인지 중복 체크 로직 작성
+        if (hasRole) {
+            throw new RoleAlreadyAssignedException(ExceptionType.ROLE_ALREADY_ASSIGNED.getMessage());
+        }
+
+        DefaultMemberRole memberRole = new DefaultMemberRole(member, role);
+        member.addRole(memberRole);
+        role.addMemberRole(memberRole);
+        
+        memberRepository.save(member);
     }
 
     @Override
+    @Transactional
     public Group createGroup(Group group) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createGroup'");
+        if (!(group instanceof DefaultGroup)) {
+            throw new UnsupportedGroupTypeException(ExceptionType.UNSUPPORTED_GROUP_TYPE.getMessage());
+        }
+        DefaultGroup defaultGroup = (DefaultGroup) group;
+        DefaultGroup savedGroup = groupRepository.save(defaultGroup);
+        return savedGroup;
     }
 
     @Override
+    @Transactional
     public void addMemberToGroup(String username, String groupName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addMemberToGroup'");
+        DefaultMember member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new MemberNotFoundException(ExceptionType.MEMBER_NOT_FOUND.getMessage()));
+
+        DefaultGroup group = groupRepository.findByGroupName(groupName)
+                .orElseThrow(() -> new GroupNotFoundException(ExceptionType.GROUP_NOT_FOUND.getMessage()));
+
+        //이미 속해 있는지 중복 체크 로직
+        boolean hasGroup = member.getGroups().stream()
+                .map(DefaultMemberGroup::getGroup)
+                .anyMatch(g -> g.getGroupName().equals(groupName));
+
+        if (hasGroup) {
+            throw new GroupAlreadyAssignedException(ExceptionType.GROUP_ALREADY_ASSIGNED.getMessage());
+        }
+
+        DefaultMemberGroup memberGroup = new DefaultMemberGroup();
+        memberGroup.setMember(member);
+        memberGroup.setGroup(group);
+
+        member.addGroup(memberGroup);
+        group.addMemberGroup(memberGroup);
+
+        memberRepository.save(member);
     }
 
     @Override
+    @Transactional
     public void addRoleToGroup(String roleName, String groupName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addRoleToGroup'");
+        DefaultRole role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new RoleNotFoundException(ExceptionType.ROLE_NOT_FOUND.getMessage()));
+        DefaultGroup group = groupRepository.findByGroupName(groupName)
+                .orElseThrow(() -> new GroupNotFoundException(ExceptionType.GROUP_NOT_FOUND.getMessage()));
+
+        DefaultGroupRole groupRole = new DefaultGroupRole();
+        groupRole.setGroup(group);
+        groupRole.setRole(role);
+
+        group.addGroupRole(groupRole);
+        role.addGroupRole(groupRole);
+
+        groupRepository.save(group);
     }
 }
