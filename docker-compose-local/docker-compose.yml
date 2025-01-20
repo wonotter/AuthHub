@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: authhub-postgres
+    environment:
+      POSTGRES_DB: authhub
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - authhub-network
+
+volumes:
+  postgres_data:
+
+networks:
+  authhub-network:
+    driver: bridge
