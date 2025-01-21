@@ -2,6 +2,7 @@ package com.authsphere.authhub.domain;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -158,5 +159,11 @@ public class Member extends BaseTimeEntity {
             // Permission은 그대로 권한 문자열로 사용
             authorities.add(rolePermission.getPermission().getPermissionName());
         }
+    }
+
+    public List<String> getAuthorityStrings() {
+        return getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList());
     }
 }
