@@ -20,6 +20,7 @@ public enum ExceptionType {
     UNSUPPORTED_GROUP_TYPE(BAD_REQUEST, "E006", "Only DefaultGroup is supported in this implementation."),
     GROUP_NOT_FOUND(NOT_FOUND, "E007", "Group not found"),
     GROUP_ALREADY_ASSIGNED(BAD_REQUEST, "E008", "Group already assigned to the member"),
+    LOGIN_AUTHENTICATION_EXCEPTION(BAD_REQUEST, "E009", "Login authentication exception"),
     ;
     
     private final HttpStatus status;

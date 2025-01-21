@@ -1,5 +1,7 @@
 package com.authsphere.authhub.service.domain;
 
+import java.util.Optional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,10 @@ public class MemberService {
     public Member findMemberByUsername(String username) {
         return memberRepository.findByUsername(username)
             .orElseThrow(() -> new NotFoundException(ExceptionType.MEMBER_NOT_FOUND));
+    }
+
+    public Optional<Member> findByUsernameWithRolesAndGroups(String username) {
+        return memberRepository.findByUsernameWithRolesAndGroups(username);
     }
 
     public Member registerSocialMember(OAuth2UserInfo oAuth2UserInfo) {
