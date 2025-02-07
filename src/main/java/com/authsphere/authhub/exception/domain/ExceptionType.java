@@ -28,7 +28,10 @@ public enum ExceptionType {
     ACCESS_DENIED_EXCEPTION(FORBIDDEN, "E011", "Access denied exception"),
     TOKEN_EXPIRED_EXCEPTION(UNAUTHORIZED, "E012", "Token expired exception"),
     JWT_REFRESH_TOKEN_NOT_FOUND(NOT_FOUND, "E013", "Jwt refresh token not found"),
-    LOGOUT_SUCCESS(OK, "E014", "Logout success");
+    LOGOUT_SUCCESS(OK, "E014", "Logout success"),
+    INVALID_PASSWORD(UNAUTHORIZED, "E015", "Invalid password"),
+    DUPLICATE_MEMBER(BAD_REQUEST, "E016", "Duplicate member"),
+    ;
     
     private final HttpStatus status;
     private final String code;

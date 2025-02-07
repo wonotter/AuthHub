@@ -11,7 +11,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.authsphere.authhub.domain.JwtToken;
+import com.authsphere.authhub.domain.JwtAuthenticationToken;
 import com.authsphere.authhub.exception.commonexception.ErrorResponse;
 import com.authsphere.authhub.exception.commonexception.ExpiredTokenException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             getToken(request)
-                .<Authentication>map(token -> authenticationManager.authenticate(new JwtToken(token)))
+                .<Authentication>map(token -> authenticationManager.authenticate(new JwtAuthenticationToken(token)))
                 .ifPresent(authentication -> SecurityContextHolder.getContext().setAuthentication(authentication));
         } catch (AuthenticationException e) {
             if(e instanceof ExpiredTokenException) {

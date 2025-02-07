@@ -14,6 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
 
+import com.authsphere.authhub.domain.JwtAuthenticationToken;
 import com.authsphere.authhub.domain.oauth2.ClaimsUser;
 import com.authsphere.authhub.domain.oauth2.OAuth2Provider;
 import com.authsphere.authhub.domain.oauth2.OAuth2UserInfo;
@@ -54,6 +55,6 @@ public class JwtTokenProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return true;
+        return JwtAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

@@ -23,6 +23,7 @@ public class JwtRefreshToken extends BaseTimeEntity implements Persistable<Long>
     @Column(name = "refresh_token", unique = true)
     private String refreshToken;
 
+
     @Builder
     public JwtRefreshToken(@NonNull Long memberId, @NonNull String refreshToken) {
         this.memberId = memberId;

@@ -13,8 +13,9 @@ public class DefaultMemberUserInfo implements OAuth2UserInfo {
         this.member = member;
         this.attributes = new HashMap<>();
         this.attributes.put("id", member.getId());
-        this.attributes.put("username", member.getUsername());
+        this.attributes.put("email", member.getEmail());
     }
+
 
     @Override
     public OAuth2Provider getProvider() {
@@ -38,12 +39,13 @@ public class DefaultMemberUserInfo implements OAuth2UserInfo {
     }
     @Override
     public String getName() {
-        return member.getUsername();
+        return member.getEmail();
     }
     @Override
     public String getFirstName() {
         return null;
     }
+
     @Override
     public String getLastName() {
         return null;

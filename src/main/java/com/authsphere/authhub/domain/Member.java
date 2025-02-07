@@ -8,12 +8,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.authsphere.authhub.common.BaseTimeEntity;
 import com.authsphere.authhub.domain.oauth2.OAuth2UserInfo;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,8 +29,8 @@ public class Member extends BaseTimeEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(name = "username", nullable = false, unique = true)
-    private String username;
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
 
     @Column(name = "password", nullable = false)
     private String password;
@@ -39,11 +41,20 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MemberGroup> groups;
 
-    public Member(String username, String password) {
-        this.username = username;
+    @Builder
+    public Member(String email, String password) {
+        this.email = email;
         this.password = password;
         this.roles = new HashSet<>();
         this.groups = new HashSet<>();
+    }
+
+    public void encodePassword(PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(this.password);
+    }
+
+    public boolean matchPassword(String rawPassword, PasswordEncoder passwordEncoder) {
+        return passwordEncoder.matches(rawPassword, this.password);
     }
 
     public void updateFrom(Member other) {
