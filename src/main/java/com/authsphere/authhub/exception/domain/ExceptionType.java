@@ -8,6 +8,9 @@ import lombok.Getter;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.OK;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,6 +23,14 @@ public enum ExceptionType {
     UNSUPPORTED_GROUP_TYPE(BAD_REQUEST, "E006", "Only DefaultGroup is supported in this implementation."),
     GROUP_NOT_FOUND(NOT_FOUND, "E007", "Group not found"),
     GROUP_ALREADY_ASSIGNED(BAD_REQUEST, "E008", "Group already assigned to the member"),
+    LOGIN_AUTHENTICATION_EXCEPTION(BAD_REQUEST, "E009", "Login authentication exception"),
+    AUTHENTICATION_ENTRY_POINT_EXCEPTION(UNAUTHORIZED, "E010", "Authentication entry point exception"),
+    ACCESS_DENIED_EXCEPTION(FORBIDDEN, "E011", "Access denied exception"),
+    TOKEN_EXPIRED_EXCEPTION(UNAUTHORIZED, "E012", "Token expired exception"),
+    JWT_REFRESH_TOKEN_NOT_FOUND(NOT_FOUND, "E013", "Jwt refresh token not found"),
+    LOGOUT_SUCCESS(OK, "E014", "Logout success"),
+    INVALID_PASSWORD(UNAUTHORIZED, "E015", "Invalid password"),
+    DUPLICATE_MEMBER(BAD_REQUEST, "E016", "Duplicate member"),
     ;
     
     private final HttpStatus status;

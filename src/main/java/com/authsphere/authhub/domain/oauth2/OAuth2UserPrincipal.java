@@ -13,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class OAuth2UserPrincipal implements OAuth2User, UserDetails {
-    private final Long id;
-    private final String username;
     private final OAuth2UserInfo userInfo;
     private final Collection<? extends GrantedAuthority> authorities;
 
@@ -40,6 +38,6 @@ public class OAuth2UserPrincipal implements OAuth2User, UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return null;
     }
 }

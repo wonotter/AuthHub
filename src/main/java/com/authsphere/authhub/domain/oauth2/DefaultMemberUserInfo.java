@@ -1,5 +1,6 @@
 package com.authsphere.authhub.domain.oauth2;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.authsphere.authhub.domain.Member;
@@ -8,12 +9,13 @@ public class DefaultMemberUserInfo implements OAuth2UserInfo {
     private final Map<String, Object> attributes;
     private final Member member;
 
-    public DefaultMemberUserInfo(Member member, Map<String, Object> attributes) {
+    public DefaultMemberUserInfo(Member member) {
         this.member = member;
-        this.attributes = attributes;
+        this.attributes = new HashMap<>();
         this.attributes.put("id", member.getId());
-        this.attributes.put("username", member.getUsername());
+        this.attributes.put("email", member.getEmail());
     }
+
 
     @Override
     public OAuth2Provider getProvider() {
@@ -37,12 +39,13 @@ public class DefaultMemberUserInfo implements OAuth2UserInfo {
     }
     @Override
     public String getName() {
-        return member.getUsername();
+        return member.getEmail();
     }
     @Override
     public String getFirstName() {
         return null;
     }
+
     @Override
     public String getLastName() {
         return null;

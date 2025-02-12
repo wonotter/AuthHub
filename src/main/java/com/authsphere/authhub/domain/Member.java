@@ -1,13 +1,21 @@
 package com.authsphere.authhub.domain;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.authsphere.authhub.common.BaseTimeEntity;
 import com.authsphere.authhub.domain.oauth2.OAuth2UserInfo;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,8 +29,8 @@ public class Member extends BaseTimeEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(name = "username", nullable = false, unique = true)
-    private String username;
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
 
     @Column(name = "password", nullable = false)
     private String password;
@@ -33,11 +41,20 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MemberGroup> groups;
 
-    public Member(String username, String password) {
-        this.username = username;
+    @Builder
+    public Member(String email, String password) {
+        this.email = email;
         this.password = password;
         this.roles = new HashSet<>();
         this.groups = new HashSet<>();
+    }
+
+    public void encodePassword(PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(this.password);
+    }
+
+    public boolean matchPassword(String rawPassword, PasswordEncoder passwordEncoder) {
+        return passwordEncoder.matches(rawPassword, this.password);
     }
 
     public void updateFrom(Member other) {
@@ -119,4 +136,45 @@ public class Member extends BaseTimeEntity {
         return new Member(oAuth2UserInfo.getName(), null);
     }
 
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        Set<String> authorities = new HashSet<>();
+
+        //직접 할당된 Role 처리
+        for (MemberRole memberRole : roles) {
+            collectRoleAndPermission(memberRole.getRole(), authorities); // memberRole.getRole() 이 시점에서 추가 쿼리가 많이 발생할 수 있음..
+        }
+
+        // 그룹을 통해 할당된 Role 처리
+        for(MemberGroup memberGroup : groups) {
+            Group group = memberGroup.getGroup();
+            for(GroupRole groupRole : group.getGroupRoles()) {
+                collectRoleAndPermission(groupRole.getRole(), authorities);
+            }
+        }
+
+        return authorities.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * 주어진 Role 및 해당 Role의 Permission들을 authorities에 추가
+     * - 'ROLE_' prefix를 붙여서 RoleName을 추가
+     * - Role이 가지는 Permission 권한들도 함께 추가
+     */
+    private void collectRoleAndPermission(Role role, Set<String> authorities) {
+        //ex) ROLE_ADMIN 등
+        authorities.add("ROLE_" + role.getRoleName());
+        // Role에 속한 Permission들도 추가
+        for(RolePermission rolePermission : role.getRolePermissions()) {
+            // Permission은 그대로 권한 문자열로 사용
+            authorities.add(rolePermission.getPermission().getPermissionName());
+        }
+    }
+
+    public List<String> getAuthorityStrings() {
+        return getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList());
+    }
 }

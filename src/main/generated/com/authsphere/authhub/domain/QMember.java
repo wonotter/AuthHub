@@ -25,6 +25,8 @@ public class QMember extends EntityPathBase<Member> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdDate = _super.createdDate;
 
+    public final StringPath email = createString("email");
+
     public final SetPath<MemberGroup, QMemberGroup> groups = this.<MemberGroup, QMemberGroup>createSet("groups", MemberGroup.class, QMemberGroup.class, PathInits.DIRECT2);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
@@ -35,8 +37,6 @@ public class QMember extends EntityPathBase<Member> {
     public final StringPath password = createString("password");
 
     public final SetPath<MemberRole, QMemberRole> roles = this.<MemberRole, QMemberRole>createSet("roles", MemberRole.class, QMemberRole.class, PathInits.DIRECT2);
-
-    public final StringPath username = createString("username");
 
     public QMember(String variable) {
         super(Member.class, forVariable(variable));
